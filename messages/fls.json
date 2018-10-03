@@ -1,0 +1,12 @@
+{
+	"commandDescription": "Sets Field Level Security of fields for a list of profiles.",
+	"packagexmlFlagDescription": "File path to package.xml. If this flag is set, --profiles must also be set. \nDefaults permissions to visibleaccess='true', readonlyaccess='false' unless --visibleaccess and --readonlyaccess are specified.",
+	"datafileFlagDescription": "File path to a csv file. All other flags are ignored. Make sure to enclose 'profiles' column in double quotes if you have more that one profile. File foramt as follows:\n\nfieldname,visible,readonly,profiles\nAccount.My_Custom_Field_1__c,true,false,\"Admin,Integration*\"\nAccount.My_Custom_Field_2__c,true,false,\"ecrm*\"",
+	"profilesFlagDescription": "List of profiles separated by commas and is required with --pacakgexml or --sobjects. You can also pass wildcards as a value to match on profile names (only ^,$,* are supported, ^ matches start of the parameter value, $ matches end of the parameter value and * matches one of more character).",
+	"objectsFlagDescription": "List of SObjects separated by commas(FLS can only be set for custom fields via this flag). --filter and --profiles must also be set. \nDefaults permissions to visibleaccess='true', readonlyaccess='false' unless --visibleaccess and --readonlyaccess are specified. All other flags are ignored.",
+	"filterFlagDescription": "Analogous to SOQL where clause to pull fields from SObjects and required with --sobjects. Allowed fields: CreatedDate, CreatedBy, LastModifiedDate, LastModifiedBy, DeveloperName. DeveloperName here referes to the SObject custom field. Do not include '__c' as part of the search value for DevelperName.\n\nExamples:\n\nLastModifiedBy.LastName='Doe' AND lastModifiedDate = TODAY AND DeveloperName like 'MyCustom%'",
+	"visibleaccessFlagDescription": "Visible FLS permission, defaults to 'true'. Valid values are 'true' or 'false'.",
+	"readonlyaccessFlagDescription": "Read Only FLS permission, defaults to 'false'. Valid values are 'true' or 'false'.",
+	"verboseFlagDescription": "Output to screen in datafile format, defaults to false unless --checkonly flag is set",
+	"checkonlyFlagDescription": "Just display details, do not change profiles, defaults to false."
+}
