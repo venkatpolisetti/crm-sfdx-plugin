@@ -4,16 +4,15 @@
 Sfdx CLI plugins for automating mundane tasks such as setting FLS etc.,
 
 [![Version](https://img.shields.io/npm/v/@venkatpolisetti/crm-sfdx-plugin.svg)](https://npmjs.org/package/@venkatpolisetti/crm-sfdx-plugin)
-[![License](https://img.shields.io/npm/l/@venkatpolisetti/crm-sfdx-plugin.svg)](https://github.com/https://github.com/venkatpolisetti/crm-sfdx-plugin/crm-sfdx-plugin/blob/master/package.json)
+[![License](https://img.shields.io/npm/l/@venkatpolisetti/crm-sfdx-plugin.svg)](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/master/package.json)
 
 <!-- install -->
 ```sh-session
 $ sfdx plugins:install @venkatpolisetti/crm-sfdx-plugin
 ```
-<!-- commands -->
-* [`@venkatpolisetti/crm-sfdx-plugin crm:fls:set`](#venkatpolisetti-crm-sfdx-plugin-crmflsset)
+* [`sfdx crm:fls:set`](#sfdx crm:fls:set)
 
-## `@venkatpolisetti/crm-sfdx-plugin crm:fls:set`
+## `sfdx crm:fls:set`
 
 Sets Field Level Security of fields for a list of profiles.
 
@@ -96,4 +95,3 @@ EXAMPLES
 ```
 
 _See code: [src\commands\crm\fls\set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v1.0.0/src\commands\crm\fls\set.ts)_
-<!-- commandsstop -->
