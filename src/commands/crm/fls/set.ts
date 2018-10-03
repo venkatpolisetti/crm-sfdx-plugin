@@ -83,6 +83,10 @@ export default class set extends SfdxCommand {
 			throw new core.SfdxError('--profiles and --filter must be specified when --sobjects is used');
 		}
 
+		if (!this.flags.packagexml && !this.flags.sobjects && !this.flags.datafile) {
+			throw new core.SfdxError('You must pass one of following flags: --packagexml or --datafile or --sobjects');
+		}
+
 		// set defaults to visibleaccess and readonlyaccess
 		if (this.flags.visibleaccess) {
 			if (!this.flags.visibleaccess.match(/^true$|^false$/i)) {
