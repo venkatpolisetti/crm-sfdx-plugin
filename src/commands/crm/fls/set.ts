@@ -15,7 +15,7 @@ field => visible true, readonly true
 profile => read Access true, edit access false
 */
 core.Messages.importMessagesDirectory(__dirname);
-const messages = core.Messages.loadMessages('@venkatpolisetti/crm-sfdx-plugin', 'fls');
+const messages = core.Messages.loadMessages('crm-sfdx-plugin', 'fls');
 
 interface FieldPermission {
 	field: string,
