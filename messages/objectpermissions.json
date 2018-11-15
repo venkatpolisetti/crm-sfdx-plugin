@@ -1,0 +1,13 @@
+{
+	"commandDescription": "Sets SObject Level Security for a list of profiles.",
+	"profilesFlagDescription": "List of profiles separated by commas. You can also use wildcards as part of this parameter to match on profile names (only ^,$,* are supported, ^ matches start of the profile name, $ matches end of the profile name and * matches one of more characters of profile name).",
+	"objectsFlagDescription": "List of SObjects separated by commas.",
+	"readaccessFlagDescription": "Read SObject permission, defaults to 'true'. Valid values are 'true' or 'false'.",
+	"createaccessFlagDescription": "Create SObject permission, defaults to 'true'. Valid values are 'true' or 'false'.",
+	"editaccessFlagDescription": "Edit SObject permission, defaults to 'true'. Valid values are 'true' or 'false'.",
+	"deleteaccessFlagDescription": "Delete SObject permission, defaults to 'false'. Valid values are 'true' or 'false'.",
+	"viewallaccessFlagDescription": "View All SObject permission, defaults to 'true'. Valid values are 'true' or 'false'.",
+	"modifyallaccessFlagDescription": "Modify All SObject permission, defaults to 'false'. Valid values are 'true' or 'false'.",
+	"verboseFlagDescription": "Output to screen in csv format, defaults to false unless --checkonly flag is set",
+	"checkonlyFlagDescription": "Just display details, no updates are made to profiles, defaults to false."
+}

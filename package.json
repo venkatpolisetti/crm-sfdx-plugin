@@ -1,7 +1,7 @@
 {
   "name": "crm-sfdx-plugin",
   "description": "Sfdx CLI plugin for automating mundane tasks such as setting FLS etc.,",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "author": "Venkat Polisetti",
   "bugs": "https://github.com/venkatpolisetti/crm-sfdx-plugin/issues",
   "dependencies": {
@@ -48,10 +48,11 @@
   "oclif": {
     "commands": "./lib/commands",
     "topics": {
-      "hello": {
-        "description": "Commands to say hello."
+      "crm": {
+        "description": "Commands to update profiles."
       }
-    },
+	},
+	"bin": "sfdx",
     "devPlugins": [
       "@oclif/plugin-help"
     ]
