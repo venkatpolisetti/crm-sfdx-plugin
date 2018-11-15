@@ -1,6 +1,6 @@
 {
-  "name": "crm-sfdx-plugin",
-  "version": "1.0.1",
+  "name": "@venkatpolisetti/crm-sfdx-plugin",
+  "version": "2.0.0",
   "lockfileVersion": 1,
   "requires": true,
   "dependencies": {
