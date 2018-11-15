@@ -6,7 +6,7 @@ import * as interfaces from '../../../../shared/interfaces';
 import * as profileInfo from '../../../../shared/profile';
 
 core.Messages.importMessagesDirectory(__dirname);
-const messages = core.Messages.loadMessages('@venkatpolisetti/crm-sfdx-plugin', 'recordtypevisibilities');
+const messages = core.Messages.loadMessages('@venkat.polisetti/crm-sfdx-plugin', 'recordtypevisibilities');
 
 export default class set extends SfdxCommand {
 

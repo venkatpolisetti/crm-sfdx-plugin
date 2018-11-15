@@ -6,7 +6,7 @@ import * as interfaces from '../../../../shared/interfaces';
 import * as profileInfo from '../../../../shared/profile';
 
 core.Messages.importMessagesDirectory(__dirname);
-const messages = core.Messages.loadMessages('@venkatpolisetti/crm-sfdx-plugin', 'objectpermissions');
+const messages = core.Messages.loadMessages('@venkat.polisetti/crm-sfdx-plugin', 'objectpermissions');
 
 export default class set extends SfdxCommand {
 
@@ -28,7 +28,7 @@ export default class set extends SfdxCommand {
 		editaccess: flags.string({ char: 'e', description: messages.getMessage('editaccessFlagDescription') }),
 		deleteaccess: flags.string({ char: 'x', description: messages.getMessage('deleteaccessFlagDescription') }),
 		viewallaccess: flags.string({ char: 's', description: messages.getMessage('viewallaccessFlagDescription') }),
-		modifyallaccess: flags.string({ char: 'w', description: messages.getMessage('modifyallaccessFlagDescription') }),
+		modifyallaccess: flags.string({ char: 'm', description: messages.getMessage('modifyallaccessFlagDescription') }),
 		verbose: flags.boolean({ char: 'v', description: messages.getMessage('verboseFlagDescription') }),
 		checkonly: flags.boolean({ char: 'c', description: messages.getMessage('checkonlyFlagDescription') }),
 	};

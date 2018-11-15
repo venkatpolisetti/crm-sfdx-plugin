@@ -94,6 +94,9 @@ OPTIONS
   -e, --editaccess=editaccess                     Edit SObject permission, defaults to 'true'. Valid values are 'true'
                                                   or 'false'.
 
+  -m, --modifyallaccess=modifyallaccess           Modify All SObject permission, defaults to 'false'. Valid values are
+                                                  'true' or 'false'.
+
   -o, --sobjects=sobjects                         List of SObjects separated by commas.
 
   -p, --profiles=profiles                         List of profiles separated by commas. You can also use wildcards as
@@ -111,9 +114,6 @@ OPTIONS
 
   -v, --verbose                                   Output to screen in csv format, defaults to false unless --checkonly
                                                   flag is set
-
-  -w, --modifyallaccess=modifyallaccess           Modify All SObject permission, defaults to 'false'. Valid values are
-                                                  'true' or 'false'.
 
   -x, --deleteaccess=deleteaccess                 Delete SObject permission, defaults to 'false'. Valid values are
                                                   'true' or 'false'.

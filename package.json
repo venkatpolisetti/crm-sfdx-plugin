@@ -1,27 +1,27 @@
 {
-  "name": "@venkatpolisetti/crm-sfdx-plugin",
+  "name": "@venkat.polisetti/crm-sfdx-plugin",
   "description": "Sfdx CLI plugin for automating mundane tasks such as setting FLS etc.,",
   "version": "2.0.0",
   "author": "Venkat Polisetti",
   "bugs": "https://github.com/venkatpolisetti/crm-sfdx-plugin/issues",
   "dependencies": {
-    "@oclif/command": "1",
-    "@oclif/config": "1",
-    "@oclif/errors": "1",
+    "@oclif/command": "^1.5.6",
+    "@oclif/config": "^1.9.0",
+    "@oclif/errors": "^1.2.2",
     "@salesforce/command": "0.1.6",
     "@types/xml2js": "^0.4.3",
     "csvtojson": "^2.0.8",
     "tslib": "1"
   },
   "devDependencies": {
-    "@oclif/dev-cli": "1",
+    "@oclif/dev-cli": "^1.19.4",
     "@oclif/plugin-help": "1",
-    "@oclif/test": "^1",
+    "@oclif/test": "^1.2.2",
     "@salesforce/dev-config": "1.1.0",
-    "@types/chai": "4",
+    "@types/chai": "^4.1.7",
     "@types/jsforce": "1.8.13",
     "@types/mocha": "5",
-    "@types/node": "10",
+    "@types/node": "^10.12.8",
     "chai": "^4",
     "globby": "8",
     "mocha": "^5",
@@ -51,8 +51,8 @@
       "crm": {
         "description": "Commands to update profiles."
       }
-	},
-	"bin": "sfdx",
+    },
+    "bin": "sfdx",
     "devPlugins": [
       "@oclif/plugin-help"
     ]
