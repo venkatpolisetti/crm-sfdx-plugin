@@ -3,9 +3,9 @@ crm-sfdx-plugin
 
 
 
-[![Version](https://img.shields.io/npm/v/crm-sfdx-plugin.svg)](https://npmjs.org/package/crm-sfdx-plugin)
-[![Downloads/week](https://img.shields.io/npm/dw/crm-sfdx-plugin.svg)](https://npmjs.org/package/crm-sfdx-plugin)
-[![License](https://img.shields.io/npm/l/crm-sfdx-plugin.svg)](https://github.com/ecrm-plugins/crm-sfdx-plugin/blob/master/package.json)
+[![Version](https://img.shields.io/npm/v/@venkat.polisetti/crm-sfdx-plugin.svg)](https://npmjs.org/package/@venkat.polisetti/crm-sfdx-plugin)
+[![Downloads/week](https://img.shields.io/npm/dw/@venkat.polisetti/crm-sfdx-plugin.svg)](https://npmjs.org/package/@venkat.polisetti/crm-sfdx-plugin)
+[![License](https://img.shields.io/npm/l/@venkat.polisetti/crm-sfdx-plugin.svg)](https://github.com/ecrm-plugins/@venkat.polisetti/crm-sfdx-plugin/blob/master/package.json)
 
 <!-- install -->
 ```sh-session
