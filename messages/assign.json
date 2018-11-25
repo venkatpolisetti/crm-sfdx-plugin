@@ -1,0 +1,8 @@
+{
+	"commandDescription": "Assign a permset to one or more users",
+	"permsetlabelFlagDescription": "A single Permission Set. Use Label of the Perm set",
+	"onbehalfofFlagDescription": "Comma-separated list of usernames. if --filter is also specified, this flag is combined in the where clause with an OR",
+	"filterFlagDescription": "Analogous to SOQL where clause to pull usernames from Standard User Object. Any queryable field in User Obect can be used.\nExamples:\n\n\"Profile.Name LIKE 'System Admin%' AND Department = 'IT'",
+	"verboseFlagDescription": "Output to screen in csv format, defaults to false unless --checkonly flag is set",
+	"checkonlyFlagDescription": "Just display details, no updates are made, defaults to false."
+}

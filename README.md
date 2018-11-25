@@ -12,9 +12,56 @@ crm-sfdx-plugin
 $ sfdx plugins:install @venkatpolisetti/crm-sfdx-plugin
 ```
 <!-- commands -->
+* [`sfdx crm:permset:assign`](#sfdx-crmpermsetassign)
 * [`sfdx crm:profile:fieldpermissions:set`](#sfdx-crmprofilefieldpermissionsset)
 * [`sfdx crm:profile:objectpermissions:set`](#sfdx-crmprofileobjectpermissionsset)
 * [`sfdx crm:profile:recordtypevisibilities:set`](#sfdx-crmprofilerecordtypevisibilitiesset)
+
+## `sfdx crm:permset:assign`
+
+Assign a permset to one or more users
+
+```
+USAGE
+  $ sfdx crm:permset:assign
+
+OPTIONS
+  -c, --checkonly                                 Just display details, no updates are made, defaults to false.
+
+  -f, --filter=filter                             Analogous to SOQL where clause to pull usernames from Standard User
+                                                  Object. Any queryable field in User Obect can be used.
+                                                  Examples:
+
+                                                  "Profile.Name LIKE 'System Admin%' AND Department = 'IT'
+
+  -n, --permsetlabel=permsetlabel                 A single Permission Set. Use Label of the Perm set
+
+  -o, --onbehalfof=onbehalfof                     Comma-separated list of usernames. if --filter is also specified, this
+                                                  flag is combined in the where clause with an OR
+
+  -u, --targetusername=targetusername             username or alias for the target org; overrides default target org
+
+  -v, --verbose                                   Output to screen in csv format, defaults to false unless --checkonly
+                                                  flag is set
+
+  --apiversion=apiversion                         override the api version used for api requests made by this command
+
+  --json                                          format output as json
+
+  --loglevel=(trace|debug|info|warn|error|fatal)  logging level for this command invocation
+
+EXAMPLE
+  $ sfdx crm:permset:assign
+             -u myalias
+             --permsetlabel="Dreamhouse"
+             --filter="Profile.Name = 'Lightning Sales'
+  $ sfdx crm:permset:assign
+             -u myalias
+             --permsetlabel="Dreamhouse"
+             --o='myuser@testorg.com'
+```
+
+_See code: [src\commands\crm\permset\assign.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.1/src\commands\crm\permset\assign.ts)_
 
 ## `sfdx crm:profile:fieldpermissions:set`
 
@@ -74,7 +121,7 @@ EXAMPLE
              --readaccess=true --editaccess=false
 ```
 
-_See code: [src\commands\crm\profile\fieldpermissions\set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.0/src\commands\crm\profile\fieldpermissions\set.ts)_
+_See code: [src\commands\crm\profile\fieldpermissions\set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.1/src\commands\crm\profile\fieldpermissions\set.ts)_
 
 ## `sfdx crm:profile:objectpermissions:set`
 
@@ -133,7 +180,7 @@ EXAMPLE
   --modifyallaccess=false
 ```
 
-_See code: [src\commands\crm\profile\objectpermissions\set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.0/src\commands\crm\profile\objectpermissions\set.ts)_
+_See code: [src\commands\crm\profile\objectpermissions\set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.1/src\commands\crm\profile\objectpermissions\set.ts)_
 
 ## `sfdx crm:profile:recordtypevisibilities:set`
 
@@ -176,5 +223,5 @@ EXAMPLE
   "visible":true},{"name":"CustomObj__c.CustomRecType2", "visible":false}]'
 ```
 
-_See code: [src\commands\crm\profile\recordtypevisibilities\set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.0/src\commands\crm\profile\recordtypevisibilities\set.ts)_
+_See code: [src\commands\crm\profile\recordtypevisibilities\set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.1/src\commands\crm\profile\recordtypevisibilities\set.ts)_
 <!-- commandsstop -->
