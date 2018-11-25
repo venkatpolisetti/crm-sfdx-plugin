@@ -61,7 +61,7 @@ EXAMPLE
              --o='myuser@testorg.com'
 ```
 
-_See code: [src\commands\crm\permset\assign.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.1/src\commands\crm\permset\assign.ts)_
+_See code: [src\commands\crm\permset\assign.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.1/src/commands/crm/permset/assign.ts)_
 
 ## `sfdx crm:profile:fieldpermissions:set`
 
@@ -121,7 +121,7 @@ EXAMPLE
              --readaccess=true --editaccess=false
 ```
 
-_See code: [src\commands\crm\profile\fieldpermissions\set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.1/src\commands\crm\profile\fieldpermissions\set.ts)_
+_See code: [src\commands\crm\profile\fieldpermissions\set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.1/src/commands/crm/profile/fieldpermissions/set.ts)_
 
 ## `sfdx crm:profile:objectpermissions:set`
 
@@ -180,7 +180,7 @@ EXAMPLE
   --modifyallaccess=false
 ```
 
-_See code: [src\commands\crm\profile\objectpermissions\set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.1/src\commands\crm\profile\objectpermissions\set.ts)_
+_See code: [src\commands\crm\profile\objectpermissions\set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.1/src/commands/crm/profile/objectpermissions/set.ts)_
 
 ## `sfdx crm:profile:recordtypevisibilities:set`
 
@@ -223,5 +223,5 @@ EXAMPLE
   "visible":true},{"name":"CustomObj__c.CustomRecType2", "visible":false}]'
 ```
 
-_See code: [src\commands\crm\profile\recordtypevisibilities\set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.1/src\commands\crm\profile\recordtypevisibilities\set.ts)_
+_See code: [src\commands\crm\profile\recordtypevisibilities\set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.1/src/commands/crm/profile/recordtypevisibilities/set.ts)_
 <!-- commandsstop -->
