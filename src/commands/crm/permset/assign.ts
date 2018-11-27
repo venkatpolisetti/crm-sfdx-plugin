@@ -39,12 +39,15 @@ export default class assign extends SfdxCommand {
 
 		const conn = this.org.getConnection();
 
-		this.ux.startSpinner('Processing');
-		
+		this.ux.log('Checking Permission Set');
+
 		// get permset id
-		const permsetResults = await conn.query("SELECT Id, Label FROM PermissionSet WHERE Label = '" + this.flags.permsetlabel + "' limit 1");
+		let permsetResults = await conn.query("SELECT Id, Label FROM PermissionSet WHERE Label = '" + this.flags.permsetlabel + "' limit 1");
+
 		if (permsetResults.totalSize == 0)
 			throw new core.SfdxError('Permission Set with the label "' + this.flags.permsetlabel + '" not found');
+
+		this.ux.log('done');
 
 		let permsetId = permsetResults.records[0]['Id'];
 
@@ -64,11 +67,11 @@ export default class assign extends SfdxCommand {
 				whereClause = this.flags.filter;
 		}
 
-		this.ux.log(whereClause);
-
+		this.ux.log('Retrieving users');
 		const userResults = await conn.query(
 				" SELECT Id, Name, Username " +
-				" FROM User WHERE IsActive = true " + 
+				" FROM User " + 
+				" WHERE IsActive = true " +
 				" AND Id NOT IN (SELECT AssigneeId FROM PermissionSetAssignment WHERE PermissionSetId = '" + permsetId + "')" +
 				" AND ( " + whereClause + ")");
 
@@ -76,7 +79,8 @@ export default class assign extends SfdxCommand {
 		let assignments = [];
 	
 		if (userResults.totalSize == 0)
-			throw new core.SfdxError('No users found matching your arguments OR this Permission set has already been assinged to users');
+			throw new core.SfdxError('No users found matching your arguments OR this Permission set has already been assinged to users matching your arguments.');
+		this.ux.log('done');
 
 		userResults.records.map((u:{Id, Name, Username}) => {
 			assignments.push({PermissionSetId:permsetId, AssigneeId: u.Id})
@@ -95,6 +99,46 @@ export default class assign extends SfdxCommand {
 			return JSON.stringify([...assignments]);
 		}
 
+		this.ux.startSpinner('Assigning Permission Set');
+
+		let assignChunks = _.chunk(assignments, 10);
+		this.ux.log(chalk.greenBright('Total assignments: ' + assignments.length));
+		this.ux.log(chalk.greenBright('Total batches: ' + assignChunks.length));
+
+		let totalResults = new Array();
+		const promises = assignChunks.map(async (v, index: number) => {
+
+			let results = await conn.sobject('PermissionSetAssignment').create(v);
+
+			totalResults.concat(results);
+
+			let isSuccess: boolean = true;
+			if (Array.isArray(results)) {
+				results.forEach(r => {
+					if (r.success == false) {
+						isSuccess = false;
+						this.ux.log(r);
+					}
+				});
+			} else {
+				if (results.success == false) {
+					isSuccess = false;
+					this.ux.log(results);
+				}
+			}
+			if (isSuccess) {
+				this.ux.log(chalk.yellowBright(`Batch (${index + 1}) processed Successfully`));
+			} else {
+				this.ux.log(chalk.redBright('\nBatch failed with errros. See above error messages'));
+			}
+		});
+
+		await Promise.all(promises);
+
+		this.ux.stopSpinner('done');
+		this.ux.log(chalk.greenBright('\nProcess Completed'));
+
+/*
 		let results = await conn.sobject('PermissionSetAssignment').create(assignments);
 		let isSuccess: boolean = true;
 		if (Array.isArray(results)) {
@@ -115,8 +159,9 @@ export default class assign extends SfdxCommand {
 		} else {
 			this.ux.log(chalk.redBright('\nFailed with errros. See above error messages'));
 		}
+*/
 
-		return JSON.stringify(results, null, 2);
+		return JSON.stringify(totalResults, null, 2);
 	}
 
 	private validateFlags() : void {
