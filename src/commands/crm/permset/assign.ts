@@ -1,9 +1,6 @@
 import { core, flags, SfdxCommand } from '@salesforce/command';
 import * as _ from 'lodash';
 import chalk from 'chalk';
-import { SaveResult } from 'jsforce';
-import * as interfaces from '../../../shared/interfaces';
-import * as profileInfo from '../../../shared/profile';
 
 core.Messages.importMessagesDirectory(__dirname);
 const messages = core.Messages.loadMessages('@venkat.polisetti/crm-sfdx-plugin', 'assign');
@@ -84,14 +81,12 @@ export default class assign extends SfdxCommand {
 
 		userResults.records.map((u:{Id, Name, Username}) => {
 			assignments.push({PermissionSetId:permsetId, AssigneeId: u.Id})
-			assignmentUserDetails.push({PermissionSetId:permsetId, UserId: u.Id, Name: u.Name, Username: u.Username});
+			assignmentUserDetails.push({"Permissionset Name": this.flags.permsetlabel, "Id":permsetId, "User Id": u.Id, "Name": u.Name, "Username": u.Username});
 		});
 
 		if (this.flags.verbose) {
-			this.ux.log('PermissionSet Name, PermissionSet Id, User Name, User Login');
-			assignmentUserDetails.forEach((a:{PermissionSetId, UserId, Name, Username}) => {
-				this.ux.log(`${this.flags.permsetlabel}, ${a.PermissionSetId}, ${a.Name}, ${a.Username}`);
-			});
+			const heading = ["Permissionset Name", "Id", "User Id", "Name", "Username"];
+			this.ux.table(assignmentUserDetails, heading);
 		}
 
 		if (this.flags.checkonly) {
@@ -137,29 +132,6 @@ export default class assign extends SfdxCommand {
 
 		this.ux.stopSpinner('done');
 		this.ux.log(chalk.greenBright('\nProcess Completed'));
-
-/*
-		let results = await conn.sobject('PermissionSetAssignment').create(assignments);
-		let isSuccess: boolean = true;
-		if (Array.isArray(results)) {
-			results.forEach(r => {
-				if (r.success == false) {
-					isSuccess = false;
-					this.ux.log(r);
-				}
-			});
-		} else {
-			if (results.success == false) {
-				isSuccess = false;
-				this.ux.log(results);
-			}
-		}
-		if (isSuccess) {
-			this.ux.log(chalk.yellowBright('Processed Successfully'));
-		} else {
-			this.ux.log(chalk.redBright('\nFailed with errros. See above error messages'));
-		}
-*/
 
 		return JSON.stringify(totalResults, null, 2);
 	}

@@ -5,7 +5,7 @@ crm-sfdx-plugin
 
 [![Version](https://img.shields.io/npm/v/@venkat.polisetti/crm-sfdx-plugin.svg)](https://npmjs.org/package/@venkat.polisetti/crm-sfdx-plugin)
 [![Downloads/week](https://img.shields.io/npm/dw/@venkat.polisetti/crm-sfdx-plugin.svg)](https://npmjs.org/package/@venkat.polisetti/crm-sfdx-plugin)
-[![License](https://img.shields.io/npm/l/@venkat.polisetti/crm-sfdx-plugin.svg)](https://github.com/ecrm-plugins/@venkat.polisetti/crm-sfdx-plugin/blob/master/package.json)
+[![License](https://img.shields.io/npm/l/@venkat.polisetti/crm-sfdx-plugin.svg)](https://github.com/ecrm-plugins/crm-sfdx-plugin/blob/master/package.json)
 
 <!-- install -->
 ```sh-session
@@ -61,7 +61,7 @@ EXAMPLE
              --o='myuser@testorg.com'
 ```
 
-_See code: [src/commands/crm/permset/assign.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.4/src/commands/crm/permset/assign.ts)_
+_See code: [src/commands/crm/permset/assign.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.5/src/commands/crm/permset/assign.ts)_
 
 ## `sfdx crm:profile:fieldpermissions:set`
 
@@ -121,7 +121,7 @@ EXAMPLE
              --readaccess=true --editaccess=false
 ```
 
-_See code: [src/commands/crm/profile/fieldpermissions/set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.4/src/commands/crm/profile/fieldpermissions/set.ts)_
+_See code: [src/commands/crm/profile/fieldpermissions/set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.5/src/commands/crm/profile/fieldpermissions/set.ts)_
 
 ## `sfdx crm:profile:objectpermissions:set`
 
@@ -180,7 +180,7 @@ EXAMPLE
   --modifyallaccess=false
 ```
 
-_See code: [src/commands/crm/profile/objectpermissions/set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.4/src/commands/crm/profile/objectpermissions/set.ts)_
+_See code: [src/commands/crm/profile/objectpermissions/set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.5/src/commands/crm/profile/objectpermissions/set.ts)_
 
 ## `sfdx crm:profile:recordtypevisibilities:set`
 
@@ -223,5 +223,5 @@ EXAMPLE
   "visible":true},{"name":"CustomObj__c.CustomRecType2", "visible":false}]'
 ```
 
-_See code: [src/commands/crm/profile/recordtypevisibilities/set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.4/src/commands/crm/profile/recordtypevisibilities/set.ts)_
+_See code: [src/commands/crm/profile/recordtypevisibilities/set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.5/src/commands/crm/profile/recordtypevisibilities/set.ts)_
 <!-- commandsstop -->
