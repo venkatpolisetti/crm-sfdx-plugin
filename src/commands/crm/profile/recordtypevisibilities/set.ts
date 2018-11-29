@@ -71,12 +71,15 @@ export default class set extends SfdxCommand {
 		this.ux.stopSpinner('done');
 
 		if (this.flags.verbose) {
-			this.ux.log('profile,recordtype,visible,default');
+			const heading = ["profile", "recordtype", "visible", "default"];
+			let profileRecTypeArray = [];
 			profileMetadata.forEach(p => {
 				p.recordTypeVisibilities.forEach(r => {
-					this.ux.log(`${p.fullName},${r.recordType},${r.visible},${r.default}`);
+					profileRecTypeArray.push({profile:p.fullName, recordtype:r.recordType, visible:r.visible, default:r.default});
 				});
 			});
+			this.ux.table(profileRecTypeArray, heading);
+
 			if (this.flags.checkonly)
 				this.ux.log(chalk.greenBright('Total Profiles to update: ' + profileMetadata.length));
 		}

@@ -81,10 +81,14 @@ export default class set extends SfdxCommand {
 				});
 			});
 
-			this.ux.log('objectname,read,create,edit,delete,viewall,modifyall,profiles');
+			const heading = ["objectname", "read", "create", "edit", "delete", "viewall", "modifyall", "profiles"];
+			let objectPermsArray = [];
 			objectProfileMap.forEach((value: { read, create, edit, delete, viewall, modifyall, profiles }, key: string) => {
-				this.ux.log(`${key},${value.read},${value.create},${value.edit},${value.delete},${value.viewall},${value.modifyall},"${value.profiles}"`);
+				objectPermsArray.push({objectname:key, read:value.read, create:value.create, edit:value.edit, delete:value.delete, viewall:value.viewall, modifyall:value.modifyall, profiles:value.profiles});
 			});
+
+			this.ux.table(objectPermsArray, heading);
+
 			if (this.flags.checkonly)
 				this.ux.log(chalk.greenBright('Total Profiles to update: ' + profileMetadata.length));
 		}

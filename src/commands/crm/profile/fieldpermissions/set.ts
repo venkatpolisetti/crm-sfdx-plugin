@@ -126,12 +126,14 @@ export default class set extends SfdxCommand {
 				});
 			});
 
-			//this.ux.log(JSON.stringify(profileMetadata, null, 2));
-
-			this.ux.log('fieldname,readaccess,editaccess,profiles');
+			const heading = ["fieldname", "readaccess", "editaccess", "profiles"];
+			let fieldArray = [];
 			fieldProfileMap.forEach((value: { readable, editable, profiles }, key: string) => {
-				this.ux.log(`${key},${value.readable},${value.editable},"${value.profiles}"`);
+				fieldArray.push({fieldname:key, readaccess:value.readable,editaccess:value.editable,profiles:value.profiles});
 			});
+
+			this.ux.table(fieldArray, heading);
+
 			if (this.flags.checkonly)
 				this.ux.log(chalk.greenBright('Total Profiles to update: ' + profileMetadata.length));
 		}
