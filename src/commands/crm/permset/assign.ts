@@ -21,7 +21,7 @@ export default class assign extends SfdxCommand {
 	];
 
 	protected static flagsConfig = {
-		permsetlabel: flags.string({ char: 'n', description: messages.getMessage('permsetlabelFlagDescription') }),
+		permsetlabel: flags.string({ char: 'n', required:true, description: messages.getMessage('permsetlabelFlagDescription') }),
 		onbehalfof: flags.string({ char: 'o', description: messages.getMessage('onbehalfofFlagDescription') }),
 		filter: flags.string({ char: 'f', description: messages.getMessage('filterFlagDescription') }),
 		verbose: flags.boolean({ char: 'v', description: messages.getMessage('verboseFlagDescription') }),
@@ -32,117 +32,121 @@ export default class assign extends SfdxCommand {
 
 	public async run(): Promise<core.AnyJson> {
 
-		this.validateFlags();
+		try {
 
-		const conn = this.org.getConnection();
+			this.validateFlags();
 
-		this.ux.log('Checking Permission Set');
+			const conn = this.org.getConnection();
 
-		// get permset id
-		let permsetResults = await conn.query("SELECT Id, Label FROM PermissionSet WHERE Label = '" + this.flags.permsetlabel + "' limit 1");
+			this.ux.startSpinner('Checking Permission Set');
 
-		if (permsetResults.totalSize == 0)
-			throw new core.SfdxError('Permission Set with the label "' + this.flags.permsetlabel + '" not found');
+			// get permset id
+			let permsetResults = await conn.query("SELECT Id, Label FROM PermissionSet WHERE Label = '" + this.flags.permsetlabel + "' limit 1");
 
-		this.ux.log('done');
+			if (permsetResults.totalSize == 0)
+				throw new core.SfdxError('Permission Set with the label "' + this.flags.permsetlabel + '" not found');
 
-		let permsetId = permsetResults.records[0]['Id'];
 
-		let whereClause = undefined;
+			let permsetId = permsetResults.records[0]['Id'];
 
-		if (this.flags.onbehalfof) {
-			whereClause = " username IN ('" + this.flags.onbehalfof
-												.split(',')
-												.map(v => v.trim())
-												.join("','") + "')";
-		}
+			let whereClause = undefined;
 
-		if (this.flags.filter) {
-			if (whereClause != undefined)
-				whereClause += ' OR ' + this.flags.filter;
-			else 
-				whereClause = this.flags.filter;
-		}
+			if (this.flags.onbehalfof) {
+				whereClause = " username IN ('" + this.flags.onbehalfof
+													.split(',')
+													.map(v => v.trim())
+													.join("','") + "')";
+			}
 
-		this.ux.log('Retrieving users');
-		const userResults = await conn.query(
-				" SELECT Id, Name, Username " +
-				" FROM User " + 
-				" WHERE IsActive = true " +
-				" AND Id NOT IN (SELECT AssigneeId FROM PermissionSetAssignment WHERE PermissionSetId = '" + permsetId + "')" +
-				" AND ( " + whereClause + ")");
+			if (this.flags.filter) {
+				if (whereClause != undefined)
+					whereClause += ' OR ' + this.flags.filter;
+				else 
+					whereClause = this.flags.filter;
+			}
 
-		let assignmentUserDetails = [];
-		let assignments = [];
-	
-		if (userResults.totalSize == 0)
-			throw new core.SfdxError('No users found matching your arguments OR this Permission set has already been assinged to users matching your arguments.');
-		this.ux.log('done');
+			this.ux.stopSpinner();
+			this.ux.startSpinner('Retrieving users');
 
-		userResults.records.map((u:{Id, Name, Username}) => {
-			assignments.push({PermissionSetId:permsetId, AssigneeId: u.Id})
-			assignmentUserDetails.push({"Permissionset Name": this.flags.permsetlabel, "Id":permsetId, "User Id": u.Id, "Name": u.Name, "Username": u.Username});
-		});
+			const userResults = await conn.query(
+					" SELECT Id, Name, Username " +
+					" FROM User " + 
+					" WHERE IsActive = true " +
+					" AND Id NOT IN (SELECT AssigneeId FROM PermissionSetAssignment WHERE PermissionSetId = '" + permsetId + "')" +
+					" AND ( " + whereClause + ")");
 
-		if (this.flags.verbose) {
-			const heading = ["Permissionset Name", "Id", "User Id", "Name", "Username"];
-			this.ux.table(assignmentUserDetails, heading);
-		}
+			let assignmentUserDetails = [];
+			let assignments = [];
+		
+			if (userResults.totalSize == 0)
+				throw new core.SfdxError('No users found matching your arguments OR this Permission set has already been assinged to users matching your arguments.');
 
-		if (this.flags.checkonly) {
+
+			userResults.records.map((u:{Id, Name, Username}) => {
+				assignments.push({PermissionSetId:permsetId, AssigneeId: u.Id})
+				assignmentUserDetails.push({"Permissionset Name": this.flags.permsetlabel, "Id":permsetId, "User Id": u.Id, "Name": u.Name, "Username": u.Username});
+			});
+
+			this.ux.stopSpinner();
+
+			if (this.flags.verbose) {
+				const heading = ["Permissionset Name", "Id", "User Id", "Name", "Username"];
+				this.ux.table(assignmentUserDetails, heading);
+			}
+
+			if (this.flags.checkonly) {
+				this.ux.log(chalk.greenBright('Total assignments: ' + assignments.length));
+				return JSON.stringify([...assignments]);
+			}
+
+			this.ux.startSpinner('Assigning Permission Set');
+
+			let assignChunks = _.chunk(assignments, 10);
 			this.ux.log(chalk.greenBright('Total assignments: ' + assignments.length));
-			return JSON.stringify([...assignments]);
-		}
+			this.ux.log(chalk.greenBright('Total batches: ' + assignChunks.length));
 
-		this.ux.startSpinner('Assigning Permission Set');
+			let totalResults = new Array();
+			const promises = assignChunks.map(async (v, index: number) => {
 
-		let assignChunks = _.chunk(assignments, 10);
-		this.ux.log(chalk.greenBright('Total assignments: ' + assignments.length));
-		this.ux.log(chalk.greenBright('Total batches: ' + assignChunks.length));
+				let results = await conn.sobject('PermissionSetAssignment').create(v);
 
-		let totalResults = new Array();
-		const promises = assignChunks.map(async (v, index: number) => {
+				totalResults.concat(results);
 
-			let results = await conn.sobject('PermissionSetAssignment').create(v);
-
-			totalResults.concat(results);
-
-			let isSuccess: boolean = true;
-			if (Array.isArray(results)) {
-				results.forEach(r => {
-					if (r.success == false) {
+				let isSuccess: boolean = true;
+				if (Array.isArray(results)) {
+					results.forEach(r => {
+						if (r.success == false) {
+							isSuccess = false;
+							this.ux.log(r);
+						}
+					});
+				} else {
+					if (results.success == false) {
 						isSuccess = false;
-						this.ux.log(r);
+						this.ux.log(results);
 					}
-				});
-			} else {
-				if (results.success == false) {
-					isSuccess = false;
-					this.ux.log(results);
 				}
-			}
-			if (isSuccess) {
-				this.ux.log(chalk.yellowBright(`Batch (${index + 1}) processed Successfully`));
-			} else {
-				this.ux.log(chalk.redBright('\nBatch failed with errros. See above error messages'));
-			}
-		});
+				if (isSuccess) {
+					this.ux.log(chalk.yellowBright(`Batch (${index + 1}) processed Successfully`));
+				} else {
+					this.ux.log(chalk.redBright('\nBatch failed with errros. See above error messages'));
+				}
+			});
 
-		await Promise.all(promises);
+			await Promise.all(promises);
 
-		this.ux.stopSpinner('done');
-		this.ux.log(chalk.greenBright('\nProcess Completed'));
+			this.ux.stopSpinner('done');
+			this.ux.log(chalk.greenBright('\nProcess Completed'));
 
-		return JSON.stringify(totalResults, null, 2);
+			return JSON.stringify(totalResults, null, 2);
+
+		} catch (error) {
+			this.ux.stopSpinner();
+			throw new core.SfdxError(error);
+		}
 	}
 
 	private validateFlags() : void {
-		// validate parameters
-		// permsetlabel flag required
-		if (!this.flags.permsetlabel) {
-			throw new core.SfdxError('--permsetlabel must be specified');
-		}
-
 		// onbehalfof flag or filter required, but not both
 		if (!this.flags.onbehalfof && !this.flags.filter)
 			throw new core.SfdxError('--onbehalfof or --filter must be specified');
