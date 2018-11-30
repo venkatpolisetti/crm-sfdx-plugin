@@ -21,8 +21,8 @@ export default class set extends SfdxCommand {
 	];
 
 	protected static flagsConfig = {
-		profiles: flags.string({ char: 'p', description: messages.getMessage('profilesFlagDescription') }),
-		sobjects: flags.string({ char: 'o', description: messages.getMessage('objectsFlagDescription') }),
+		profiles: flags.string({ char: 'p', required:true, description: messages.getMessage('profilesFlagDescription') }),
+		sobjects: flags.string({ char: 'o', required:true, description: messages.getMessage('objectsFlagDescription') }),
 		readaccess: flags.string({ char: 'r', description: messages.getMessage('readaccessFlagDescription') }),
 		createaccess: flags.string({ char: 'a', description: messages.getMessage('createaccessFlagDescription') }),
 		editaccess: flags.string({ char: 'e', description: messages.getMessage('editaccessFlagDescription') }),
@@ -36,115 +36,117 @@ export default class set extends SfdxCommand {
 	protected static requiresUsername = true;
 
 	public async run(): Promise<core.AnyJson> {
-		let profileMetadata: interfaces.ProfileMetadata[] = new Array<interfaces.ProfileMetadata>();
 
-		this.validateFlags();
+		try {
 
-		const conn = this.org.getConnection();
+			let profileMetadata: interfaces.ProfileMetadata[] = new Array<interfaces.ProfileMetadata>();
 
-		this.ux.startSpinner('Getting Profile data');
-		const standardProfiles: interfaces.StandardProfile[] = await profileInfo.getProfileData(conn, this.flags.profiles, 'objectPermissions');
-		standardProfiles.map(s => {
-			profileMetadata.push({ fullName: s.metaName, objectPermissions: [] })
-		});
-		this.ux.stopSpinner('done.')
+			this.validateFlags();
 
-		this.ux.startSpinner('Processing sobjects');
-		let sobjects:Array<string> = this.flags.sobjects.split(',').map( o => o.trim());
-		sobjects.forEach(sobject => {
-			profileMetadata.forEach(profile => {
-				let currentObjectPermission:interfaces.ObjectPermission = profileInfo.getObjectProfilePermissions(this.flags, sobject,
-																		standardProfiles.find(s => s.metaName == profile.fullName).objectPermissions);
-				profile.objectPermissions.push(currentObjectPermission);
+			const conn = this.org.getConnection();
+
+			this.ux.startSpinner('Getting Profile data');
+			const standardProfiles: interfaces.StandardProfile[] = await profileInfo.getProfileData(conn, this.flags.profiles, 'objectPermissions');
+			standardProfiles.map(s => {
+				profileMetadata.push({ fullName: s.metaName, objectPermissions: [] })
 			});
-		});
-		this.ux.stopSpinner('done');
+			this.ux.stopSpinner('done');
 
-		let objectProfileMap = new Map();
-
-		if (this.flags.verbose) {
-			profileMetadata.map(v => {
-				v.objectPermissions.map((o: {object, allowRead, allowCreate, allowEdit, allowDelete, viewAllRecords, modifyAllRecords}) => {
-					let profilesAndInfo = objectProfileMap.get(o.object) || {};
-					let profiles: Array<string> = profilesAndInfo.profiles || new Array<string>();
-					let standardProfile = standardProfiles.find((s: { metaName }) => v.fullName == s.metaName);
-					if (profiles.find(p => p == standardProfile.name) == undefined)
-						profiles.push(standardProfile.name);
-					profilesAndInfo.read = o.allowRead;
-					profilesAndInfo.create = o.allowCreate;
-					profilesAndInfo.edit = o.allowEdit;
-					profilesAndInfo.delete = o.allowDelete;
-					profilesAndInfo.viewall = o.viewAllRecords;
-					profilesAndInfo.modifyall = o.modifyAllRecords;
-					profilesAndInfo.profiles = profiles;
-					objectProfileMap.set(o.object, profilesAndInfo);
+			this.ux.startSpinner('Processing sobjects');
+			let sobjects:Array<string> = this.flags.sobjects.split(',').map( o => o.trim());
+			sobjects.forEach(sobject => {
+				profileMetadata.forEach(profile => {
+					let currentObjectPermission:interfaces.ObjectPermission = profileInfo.getObjectProfilePermissions(this.flags, sobject,
+																			standardProfiles.find(s => s.metaName == profile.fullName).objectPermissions);
+					profile.objectPermissions.push(currentObjectPermission);
 				});
 			});
+			this.ux.stopSpinner('done');
 
-			const heading = ["objectname", "read", "create", "edit", "delete", "viewall", "modifyall", "profiles"];
-			let objectPermsArray = [];
-			objectProfileMap.forEach((value: { read, create, edit, delete, viewall, modifyall, profiles }, key: string) => {
-				objectPermsArray.push({objectname:key, read:value.read, create:value.create, edit:value.edit, delete:value.delete, viewall:value.viewall, modifyall:value.modifyall, profiles:value.profiles});
-			});
+			let objectProfileMap = new Map();
 
-			this.ux.table(objectPermsArray, heading);
+			if (this.flags.verbose) {
+				profileMetadata.map(v => {
+					v.objectPermissions.map((o: {object, allowRead, allowCreate, allowEdit, allowDelete, viewAllRecords, modifyAllRecords}) => {
+						let profilesAndInfo = objectProfileMap.get(o.object) || {};
+						let profiles: Array<string> = profilesAndInfo.profiles || new Array<string>();
+						let standardProfile = standardProfiles.find((s: { metaName }) => v.fullName == s.metaName);
+						if (profiles.find(p => p == standardProfile.name) == undefined)
+							profiles.push(standardProfile.name);
+						profilesAndInfo.read = o.allowRead;
+						profilesAndInfo.create = o.allowCreate;
+						profilesAndInfo.edit = o.allowEdit;
+						profilesAndInfo.delete = o.allowDelete;
+						profilesAndInfo.viewall = o.viewAllRecords;
+						profilesAndInfo.modifyall = o.modifyAllRecords;
+						profilesAndInfo.profiles = profiles;
+						objectProfileMap.set(o.object, profilesAndInfo);
+					});
+				});
 
-			if (this.flags.checkonly)
-				this.ux.log(chalk.greenBright('Total Profiles to update: ' + profileMetadata.length));
-		}
+				const heading = ["objectname", "read", "create", "edit", "delete", "viewall", "modifyall", "profiles"];
+				let objectPermsArray = [];
+				objectProfileMap.forEach((value: { read, create, edit, delete, viewall, modifyall, profiles }, key: string) => {
+					objectPermsArray.push({objectname:key, read:value.read, create:value.create, edit:value.edit, delete:value.delete, viewall:value.viewall, modifyall:value.modifyall, profiles:value.profiles});
+				});
 
-		if (this.flags.checkonly) {
-			return JSON.stringify([...objectProfileMap]);
-		}
+				this.ux.table(objectPermsArray, heading);
 
-		this.ux.startSpinner('Setting Object Permissions');
+				if (this.flags.checkonly)
+					this.ux.log(chalk.greenBright('Total Profiles to update: ' + profileMetadata.length));
+			}
 
-		let meta = _.chunk(profileMetadata, 10);
-		this.ux.log(chalk.greenBright('Total Profiles to update: ' + profileMetadata.length));
-		this.ux.log(chalk.greenBright('Total batches: ' + meta.length));
+			if (this.flags.checkonly) {
+				return JSON.stringify([...objectProfileMap]);
+			}
 
-		let totalResults: Array<SaveResult> = new Array<SaveResult>();
-		const promises = meta.map(async (v: interfaces.ProfileMetadata[], index: number) => {
+			this.ux.startSpinner('Setting Object Permissions');
 
-			let results = await conn.metadata.update('Profile', v);
+			let meta = _.chunk(profileMetadata, 10);
+			this.ux.log(chalk.greenBright('Total Profiles to update: ' + profileMetadata.length));
+			this.ux.log(chalk.greenBright('Total batches: ' + meta.length));
 
-			totalResults.concat(results);
+			let totalResults: Array<SaveResult> = new Array<SaveResult>();
+			const promises = meta.map(async (v: interfaces.ProfileMetadata[], index: number) => {
 
-			let isSuccess: boolean = true;
-			if (Array.isArray(results)) {
-				results.forEach(r => {
-					if (r.success == false) {
+				let results = await conn.metadata.update('Profile', v);
+
+				totalResults.concat(results);
+
+				let isSuccess: boolean = true;
+				if (Array.isArray(results)) {
+					results.forEach(r => {
+						if (r.success == false) {
+							isSuccess = false;
+							this.ux.log(r);
+						}
+					});
+				} else {
+					if (results.success == false) {
 						isSuccess = false;
-						this.ux.log(r);
+						this.ux.log(results);
 					}
-				});
-			} else {
-				if (results.success == false) {
-					isSuccess = false;
-					this.ux.log(results);
 				}
-			}
-			if (isSuccess) {
-				this.ux.log(chalk.yellowBright(`Batch (${index + 1}) processed Successfully`));
-			} else {
-				this.ux.log(chalk.redBright('\nBatch failed with errros. See above error messages'));
-			}
-		});
+				if (isSuccess) {
+					this.ux.log(chalk.yellowBright(`Batch (${index + 1}) processed Successfully`));
+				} else {
+					this.ux.log(chalk.redBright('\nBatch failed with errros. See above error messages'));
+				}
+			});
 
-		await Promise.all(promises);
+			await Promise.all(promises);
 
-		this.ux.stopSpinner('done');
-		this.ux.log(chalk.greenBright('\nProcess Completed'));
-		return JSON.stringify(totalResults, null, 2);
+			this.ux.stopSpinner('done');
+			this.ux.log(chalk.greenBright('\nProcess Completed'));
+			return JSON.stringify(totalResults, null, 2);
+
+		} catch (error) {
+			this.ux.stopSpinner();
+			throw new core.SfdxError(error);
+		}
 	}
 
 	private validateFlags() : void {
-		// validate parameters
-		// sobjects flag: profiles flag required
-		if (this.flags.sobjects && (this.flags.profiles == undefined)) {
-			throw new core.SfdxError('--profiles must aslo be specified');
-		}
-
 		// set defaults 
 		if (this.flags.readaccess) {
 			if (!this.flags.readaccess.match(/^true$|^false$/i)) {

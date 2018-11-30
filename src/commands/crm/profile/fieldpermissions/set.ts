@@ -22,9 +22,9 @@ export default class set extends SfdxCommand {
 	];
 
 	protected static flagsConfig = {
-		profiles: flags.string({ char: 'p', description: messages.getMessage('profilesFlagDescription') }),
-		sobjects: flags.string({ char: 'o', description: messages.getMessage('objectsFlagDescription') }),
-		filter: flags.string({ char: 'f', description: messages.getMessage('filterFlagDescription') }),
+		profiles: flags.string({ char: 'p', required:true, description: messages.getMessage('profilesFlagDescription') }),
+		sobjects: flags.string({ char: 'o', required:true, description: messages.getMessage('objectsFlagDescription') }),
+		filter: flags.string({ char: 'f', required:true, description: messages.getMessage('filterFlagDescription') }),
 		readaccess: flags.string({ char: 'r', description: messages.getMessage('readaccessFlagDescription') }),
 		editaccess: flags.string({ char: 'e', description: messages.getMessage('editaccessFlagDescription') }),
 		verbose: flags.boolean({ char: 'v', description: messages.getMessage('verboseFlagDescription') }),
@@ -35,152 +35,162 @@ export default class set extends SfdxCommand {
 
 	public async run(): Promise<core.AnyJson> {
 
-		let profileMetadata: interfaces.ProfileMetadata[] = new Array<interfaces.ProfileMetadata>();
+		try {
 
-		// validate parameters
-		this.validateFlags();
+			let profileMetadata: interfaces.ProfileMetadata[] = new Array<interfaces.ProfileMetadata>();
 
-		const conn = this.org.getConnection();
+			// validate parameters
+			this.validateFlags();
 
-		this.ux.startSpinner('Getting Profile data');
-		const standardProfiles: interfaces.StandardProfile[] = await profileInfo.getProfileData(conn, this.flags.profiles);
-		standardProfiles.map(s => {
-			profileMetadata.push({ fullName: s.metaName, fieldPermissions: [] })
-		});
-		this.ux.stopSpinner('done.')
+			const conn = this.org.getConnection();
 
-		this.ux.startSpinner('Processing sobjects');
-		const customObjectMap = new Map();
+			this.ux.startSpinner('Getting Profile data');
+			const standardProfiles: interfaces.StandardProfile[] = await profileInfo.getProfileData(conn, this.flags.profiles);
+			standardProfiles.map(s => {
+				profileMetadata.push({ fullName: s.metaName, fieldPermissions: [] })
+			});
+			this.ux.stopSpinner('done.')
 
-		const customObjectsStr = ("'" + this.flags.sobjects
+			this.ux.startSpinner('Processing sobjects');
+			const customObjectMap = new Map();
+
+			const customObjectsStr = ("'" + this.flags.sobjects
+												.split(',')
+												.map(v => v.trim())
+												.filter(o => o.toLowerCase().endsWith('__c'))
+												.join("','") + "'")
+												.replace(/__c/gi, '');
+
+			const allObjectsStr = ("'" + this.flags.sobjects
 											.split(',')
 											.map(v => v.trim())
-											.filter(o => o.toLowerCase().endsWith('__c'))
 											.join("','") + "'")
 											.replace(/__c/gi, '');
 
-		const allObjectsStr = ("'" + this.flags.sobjects
-										.split(',')
-										.map(v => v.trim())
-										.join("','") + "'")
-										.replace(/__c/gi, '');
+			const customObjects = await conn.tooling.query("SELECT Id, DeveloperName FROM CustomObject WHERE DeveloperName IN (" + customObjectsStr + ")");
 
-		const customObjects = await conn.tooling.query("SELECT Id, DeveloperName FROM CustomObject WHERE DeveloperName IN (" + customObjectsStr + ")");
+			customObjects.records
+				.map((c: { Id, DeveloperName }) => customObjectMap.set(c.Id, c.DeveloperName));
 
-		customObjects.records
-			.map((c: { Id, DeveloperName }) => customObjectMap.set(c.Id, c.DeveloperName));
+			const customObjIds = "'" + customObjects.records
+											.map((c: { Id, DeveloperName }) => c.Id)
+											.join("','") + "'";
 
-		const customObjIds = "'" + customObjects.records
-										.map((c: { Id, DeveloperName }) => c.Id)
-										.join("','") + "'";
+			this.flags.filter = this.flags.filter.replace(/__c/gi, '');
 
-		this.flags.filter = this.flags.filter.replace(/__c/gi, '');
+			const customFieldResult = await conn.tooling.query(
+				'SELECT DeveloperName, TableEnumOrId ' +
+				'FROM CustomField ' +
+				'WHERE (TableEnumOrId IN (' + allObjectsStr + ') OR TableEnumOrId in (' + customObjIds + ')) ' +
+				'  AND ' + this.flags.filter
+			);
 
-		const customFieldResult = await conn.tooling.query(
-			'SELECT DeveloperName, TableEnumOrId ' +
-			'FROM CustomField ' +
-			'WHERE (TableEnumOrId IN (' + allObjectsStr + ') OR TableEnumOrId in (' + customObjIds + ')) ' +
-			'  AND ' + this.flags.filter
-		);
+			let nonPermissionableFieldSet = await profileInfo.getNonPermissionableFields(conn, this.flags.sobjects);
 
-		let nonPermissionableFieldSet = await profileInfo.getNonPermissionableFields(conn, this.flags.sobjects);
+			customFieldResult.records.map((r: { DeveloperName, TableEnumOrId }) => { customObjectMap.get(r.TableEnumOrId) || customObjectMap.set(r.TableEnumOrId, r.TableEnumOrId);});
 
-		customFieldResult.records.map((r: { DeveloperName, TableEnumOrId }) => { customObjectMap.get(r.TableEnumOrId) || customObjectMap.set(r.TableEnumOrId, r.TableEnumOrId);});
+			const customFields = customFieldResult.records
+				.filter((r: { DeveloperName, TableEnumOrId }) => !nonPermissionableFieldSet.has(r.DeveloperName + '__c'))
+				.map((r: { DeveloperName, TableEnumOrId }) => {
+						const sobjectName = customObjectMap.get(r.TableEnumOrId);
+						if (sobjectName == r.TableEnumOrId) {  // standard object
+							return r.TableEnumOrId + '.' + r.DeveloperName + '__c';
+						} else { // custom object
+							return sobjectName + '__c' + '.' + r.DeveloperName + '__c';
+						}
+				});
 
-		const customFields = customFieldResult.records
-			.filter((r: { DeveloperName, TableEnumOrId }) => !nonPermissionableFieldSet.has(r.DeveloperName + '__c'))
-			.map((r: { DeveloperName, TableEnumOrId }) => {
-					const sobjectName = customObjectMap.get(r.TableEnumOrId);
-					if (sobjectName == r.TableEnumOrId) {  // standard object
-						return r.TableEnumOrId + '.' + r.DeveloperName + '__c';
-					} else { // custom object
-						return sobjectName + '__c' + '.' + r.DeveloperName + '__c';
-					}
-			});
+			if (customFields.length == 0) {
+				throw new core.SfdxError('No fields found for SObjects: ' + this.flags.sobjects + ', please check your parameters');
+			}
 
-		customFields.forEach(field => {
-			profileMetadata.forEach(profile => {
-				profile.fieldPermissions.push({
-					field: field,
-					readable: this.getBoolean(this.flags.readaccess),
-					editable: this.getBoolean(this.flags.editaccess)
+			customFields.forEach(field => {
+				profileMetadata.forEach(profile => {
+					profile.fieldPermissions.push({
+						field: field,
+						readable: this.getBoolean(this.flags.readaccess),
+						editable: this.getBoolean(this.flags.editaccess)
+					});
 				});
 			});
-		});
-		this.ux.stopSpinner('done');
+			this.ux.stopSpinner('done');
 
-		let fieldProfileMap = new Map();
+			let fieldProfileMap = new Map();
 
-		if (this.flags.verbose) {
-			profileMetadata.map(v => {
-				v.fieldPermissions.map((f: { field, readable, editable }) => {
-					let profilesAndInfo = fieldProfileMap.get(f.field) || {};
-					let profiles: Array<string> = profilesAndInfo.profiles || new Array<string>();
-					let standardProfile = standardProfiles.find((s: { metaName }) => v.fullName == s.metaName);
-					if (profiles.find(p => p == standardProfile.name) == undefined)
-						profiles.push(standardProfile.name);
-					profilesAndInfo.readable = f.readable;
-					profilesAndInfo.editable = f.editable;
-					profilesAndInfo.profiles = profiles;
-					fieldProfileMap.set(f.field, profilesAndInfo);
+			if (this.flags.verbose) {
+				profileMetadata.map(v => {
+					v.fieldPermissions.map((f: { field, readable, editable }) => {
+						let profilesAndInfo = fieldProfileMap.get(f.field) || {};
+						let profiles: Array<string> = profilesAndInfo.profiles || new Array<string>();
+						let standardProfile = standardProfiles.find((s: { metaName }) => v.fullName == s.metaName);
+						if (profiles.find(p => p == standardProfile.name) == undefined)
+							profiles.push(standardProfile.name);
+						profilesAndInfo.readable = f.readable;
+						profilesAndInfo.editable = f.editable;
+						profilesAndInfo.profiles = profiles;
+						fieldProfileMap.set(f.field, profilesAndInfo);
+					});
 				});
-			});
 
-			const heading = ["fieldname", "readaccess", "editaccess", "profiles"];
-			let fieldArray = [];
-			fieldProfileMap.forEach((value: { readable, editable, profiles }, key: string) => {
-				fieldArray.push({fieldname:key, readaccess:value.readable,editaccess:value.editable,profiles:value.profiles});
-			});
+				const heading = ["fieldname", "readaccess", "editaccess", "profiles"];
+				let fieldArray = [];
+				fieldProfileMap.forEach((value: { readable, editable, profiles }, key: string) => {
+					fieldArray.push({fieldname:key, readaccess:value.readable,editaccess:value.editable,profiles:value.profiles});
+				});
 
-			this.ux.table(fieldArray, heading);
+				this.ux.table(fieldArray, heading);
 
-			if (this.flags.checkonly)
-				this.ux.log(chalk.greenBright('Total Profiles to update: ' + profileMetadata.length));
-		}
+				if (this.flags.checkonly)
+					this.ux.log(chalk.greenBright('Total Profiles to update: ' + profileMetadata.length));
+			}
 
-		if (this.flags.checkonly) {
-			return JSON.stringify([...fieldProfileMap]);
-		}
+			if (this.flags.checkonly) {
+				return JSON.stringify([...fieldProfileMap]);
+			}
 
-		this.ux.startSpinner('Setting Field Level Security');
+			this.ux.startSpinner('Setting Field Level Security');
 
-		let meta = _.chunk(profileMetadata, 10);
-		this.ux.log(chalk.greenBright('Total Profiles to update: ' + profileMetadata.length));
-		this.ux.log(chalk.greenBright('Total batches: ' + meta.length));
+			let meta = _.chunk(profileMetadata, 10);
+			this.ux.log(chalk.greenBright('Total Profiles to update: ' + profileMetadata.length));
+			this.ux.log(chalk.greenBright('Total batches: ' + meta.length));
 
-		let totalResults: Array<SaveResult> = new Array<SaveResult>();
-		const promises = meta.map(async (v: interfaces.ProfileMetadata[], index: number) => {
+			let totalResults: Array<SaveResult> = new Array<SaveResult>();
+			const promises = meta.map(async (v: interfaces.ProfileMetadata[], index: number) => {
 
-			let results = await conn.metadata.update('Profile', v);
+				let results = await conn.metadata.update('Profile', v);
 
-			totalResults.concat(results);
+				totalResults.concat(results);
 
-			let isSuccess: boolean = true;
-			if (Array.isArray(results)) {
-				results.forEach(r => {
-					if (r.success == false) {
+				let isSuccess: boolean = true;
+				if (Array.isArray(results)) {
+					results.forEach(r => {
+						if (r.success == false) {
+							isSuccess = false;
+							this.ux.log(r);
+						}
+					});
+				} else {
+					if (results.success == false) {
 						isSuccess = false;
-						this.ux.log(r);
+						this.ux.log(results);
 					}
-				});
-			} else {
-				if (results.success == false) {
-					isSuccess = false;
-					this.ux.log(results);
 				}
-			}
-			if (isSuccess) {
-				this.ux.log(chalk.yellowBright(`Batch (${index + 1}) processed Successfully`));
-			} else {
-				this.ux.log(chalk.redBright('\nBatch failed with errros. See above error messages'));
-			}
-		});
+				if (isSuccess) {
+					this.ux.log(chalk.yellowBright(`Batch (${index + 1}) processed Successfully`));
+				} else {
+					this.ux.log(chalk.redBright('\nBatch failed with errros. See above error messages'));
+				}
+			});
 
-		await Promise.all(promises);
+			await Promise.all(promises);
 
-		this.ux.stopSpinner('done');
-		this.ux.log(chalk.greenBright('\nProcess Completed'));
-		return JSON.stringify(totalResults, null, 2);
+			this.ux.stopSpinner('done');
+			this.ux.log(chalk.greenBright('\nProcess Completed'));
+			return JSON.stringify(totalResults, null, 2);
+		} catch (error) {
+			this.ux.stopSpinner(); // this is bug; if spinner is not stopped, it is swallowing all exceptions
+			throw new core.SfdxError(error);
+		}
 	}
 
 	private getBoolean(param: string): boolean {
@@ -190,11 +200,6 @@ export default class set extends SfdxCommand {
 	}
 
 	private validateFlags(): void {
-		// sobjects flag: profiles and filter flags required
-		if (this.flags.sobjects && (this.flags.profiles == undefined || this.flags.filter == undefined)) {
-			throw new core.SfdxError('--profiles and --filter must be specified when --sobjects is used');
-		}
-
 		// set defaults to readaccess and editaccess
 		if (this.flags.readaccess) {
 			if (!this.flags.readaccess.match(/^true$|^false$/i)) {

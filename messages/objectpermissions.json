@@ -1,6 +1,6 @@
 {
 	"commandDescription": "Sets SObject Level Security for a list of profiles.",
-	"profilesFlagDescription": "List of profiles separated by commas. You can also use wildcards as part of this parameter to match on profile names (only ^,$,* are supported, ^ matches start of the profile name, $ matches end of the profile name and * matches one of more characters of profile name).",
+	"profilesFlagDescription": "List of profiles separated by commas. You can also use wildcards as part of this parameter to match on profile names (only ^,$,* are supported, ^ matches start of the profile name, $ matches end of the profile name and * matches one or more characters anywhere in a profile name).",
 	"objectsFlagDescription": "List of SObjects separated by commas.",
 	"readaccessFlagDescription": "Read SObject permission, defaults to 'true'. Valid values are 'true' or 'false'.",
 	"createaccessFlagDescription": "Create SObject permission, defaults to 'true'. Valid values are 'true' or 'false'.",

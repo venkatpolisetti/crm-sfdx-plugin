@@ -1,6 +1,6 @@
 {
 	"commandDescription": "Sets Record Type Visibilities for a list of profiles.",
-	"profilesFlagDescription": "List of profiles separated by commas. You can also use wildcards as part of this parameter to match on profile names (only ^,$,* are supported, ^ matches start of the profile name, $ matches end of the profile name and * matches one of more characters of profile name).",
+	"profilesFlagDescription": "List of profiles separated by commas. You can also use wildcards as part of this parameter to match on profile names (only ^,$,* are supported, ^ matches start of the profile name, $ matches end of the profile name and * matches one or more characters anywhere in a profile name).",
 	"recordtypesFlagDescription": "JSON Array of Record Type visibility details. Example: [{\"name\":\"CustomObj__c.DevelperName_of_RecordType1\", \"default\":true\", \"visible\":true}, {\"name\":\"CustomObj__c.DeveloperName_of_RecordType2\", \"visible\":false},...]",
 	"verboseFlagDescription": "Output to screen in csv format, defaults to false unless --checkonly flag is set",
 	"checkonlyFlagDescription": "Just display details, no updates are made to profiles, defaults to false."

@@ -1,6 +1,6 @@
 {
 	"commandDescription": "Sets Field Level Security of fields for a list of profiles.",
-	"profilesFlagDescription": "List of profiles separated by commas. You can also use wildcards as part of this parameter to match on profile names (only ^,$,* are supported, ^ matches start of the profile name, $ matches end of the profile name and * matches one of more characters of profile name).",
+	"profilesFlagDescription": "List of profiles separated by commas. You can also use wildcards as part of this parameter to match on profile names (only ^,$,* are supported, ^ matches start of the profile name, $ matches end of the profile name and * matches one or more characters anywhere in a profile name).",
 	"objectsFlagDescription": "List of SObjects separated by commas.",
 	"filterFlagDescription": "Analogous to SOQL where clause to pull fields from SObjects. Allowed fields: CreatedDate, CreatedBy, LastModifiedDate, LastModifiedBy and DeveloperName. DeveloperName here referes to the SObject custom field.\n\nExamples:\n\nLastModifiedBy.LastName='Doe' AND lastModifiedDate = TODAY AND DeveloperName like 'MyCustom%'",
 	"readaccessFlagDescription": "read permission, defaults to 'true'. Valid values are 'true' or 'false'.",

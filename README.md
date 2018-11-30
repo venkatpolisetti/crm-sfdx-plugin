@@ -61,7 +61,7 @@ EXAMPLE
              --o='myuser@testorg.com'
 ```
 
-_See code: [src/commands/crm/permset/assign.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.5/src/commands/crm/permset/assign.ts)_
+_See code: [src/commands/crm/permset/assign.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.6/src/commands/crm/permset/assign.ts)_
 
 ## `sfdx crm:profile:fieldpermissions:set`
 
@@ -79,7 +79,7 @@ OPTIONS
       edit permission, defaults to 'true'. Valid values are 'true' or 'false'.
 
   -f, --filter=filter
-      Analogous to SOQL where clause to pull fields from SObjects. Allowed fields: CreatedDate, CreatedBy, 
+      (required) Analogous to SOQL where clause to pull fields from SObjects. Allowed fields: CreatedDate, CreatedBy, 
       LastModifiedDate, LastModifiedBy and DeveloperName. DeveloperName here referes to the SObject custom field.
 
       Examples:
@@ -87,12 +87,12 @@ OPTIONS
       LastModifiedBy.LastName='Doe' AND lastModifiedDate = TODAY AND DeveloperName like 'MyCustom%'
 
   -o, --sobjects=sobjects
-      List of SObjects separated by commas.
+      (required) List of SObjects separated by commas.
 
   -p, --profiles=profiles
-      List of profiles separated by commas. You can also use wildcards as part of this parameter to match on profile names 
-      (only ^,$,* are supported, ^ matches start of the profile name, $ matches end of the profile name and * matches one 
-      of more characters of profile name).
+      (required) List of profiles separated by commas. You can also use wildcards as part of this parameter to match on 
+      profile names (only ^,$,* are supported, ^ matches start of the profile name, $ matches end of the profile name and 
+      * matches one or more characters anywhere in a profile name).
 
   -r, --readaccess=readaccess
       read permission, defaults to 'true'. Valid values are 'true' or 'false'.
@@ -121,7 +121,7 @@ EXAMPLE
              --readaccess=true --editaccess=false
 ```
 
-_See code: [src/commands/crm/profile/fieldpermissions/set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.5/src/commands/crm/profile/fieldpermissions/set.ts)_
+_See code: [src/commands/crm/profile/fieldpermissions/set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.6/src/commands/crm/profile/fieldpermissions/set.ts)_
 
 ## `sfdx crm:profile:objectpermissions:set`
 
@@ -144,12 +144,13 @@ OPTIONS
   -m, --modifyallaccess=modifyallaccess           Modify All SObject permission, defaults to 'false'. Valid values are
                                                   'true' or 'false'.
 
-  -o, --sobjects=sobjects                         List of SObjects separated by commas.
+  -o, --sobjects=sobjects                         (required) List of SObjects separated by commas.
 
-  -p, --profiles=profiles                         List of profiles separated by commas. You can also use wildcards as
-                                                  part of this parameter to match on profile names (only ^,$,* are
-                                                  supported, ^ matches start of the profile name, $ matches end of the
-                                                  profile name and * matches one of more characters of profile name).
+  -p, --profiles=profiles                         (required) List of profiles separated by commas. You can also use
+                                                  wildcards as part of this parameter to match on profile names (only
+                                                  ^,$,* are supported, ^ matches start of the profile name, $ matches
+                                                  end of the profile name and * matches one or more characters anywhere
+                                                  in a profile name).
 
   -r, --readaccess=readaccess                     Read SObject permission, defaults to 'true'. Valid values are 'true'
                                                   or 'false'.
@@ -180,7 +181,7 @@ EXAMPLE
   --modifyallaccess=false
 ```
 
-_See code: [src/commands/crm/profile/objectpermissions/set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.5/src/commands/crm/profile/objectpermissions/set.ts)_
+_See code: [src/commands/crm/profile/objectpermissions/set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.6/src/commands/crm/profile/objectpermissions/set.ts)_
 
 ## `sfdx crm:profile:recordtypevisibilities:set`
 
@@ -194,12 +195,13 @@ OPTIONS
   -c, --checkonly                                 Just display details, no updates are made to profiles, defaults to
                                                   false.
 
-  -p, --profiles=profiles                         List of profiles separated by commas. You can also use wildcards as
-                                                  part of this parameter to match on profile names (only ^,$,* are
-                                                  supported, ^ matches start of the profile name, $ matches end of the
-                                                  profile name and * matches one of more characters of profile name).
+  -p, --profiles=profiles                         (required) List of profiles separated by commas. You can also use
+                                                  wildcards as part of this parameter to match on profile names (only
+                                                  ^,$,* are supported, ^ matches start of the profile name, $ matches
+                                                  end of the profile name and * matches one or more characters anywhere
+                                                  in a profile name).
 
-  -r, --recordtypes=recordtypes                   JSON Array of Record Type visibility details. Example:
+  -r, --recordtypes=recordtypes                   (required) JSON Array of Record Type visibility details. Example:
                                                   [{"name":"CustomObj__c.DevelperName_of_RecordType1", "default":true",
                                                   "visible":true}, {"name":"CustomObj__c.DeveloperName_of_RecordType2",
                                                   "visible":false},...]
@@ -223,5 +225,5 @@ EXAMPLE
   "visible":true},{"name":"CustomObj__c.CustomRecType2", "visible":false}]'
 ```
 
-_See code: [src/commands/crm/profile/recordtypevisibilities/set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.5/src/commands/crm/profile/recordtypevisibilities/set.ts)_
+_See code: [src/commands/crm/profile/recordtypevisibilities/set.ts](https://github.com/venkatpolisetti/crm-sfdx-plugin/blob/v2.0.6/src/commands/crm/profile/recordtypevisibilities/set.ts)_
 <!-- commandsstop -->
