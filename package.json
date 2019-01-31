@@ -1,7 +1,7 @@
 {
   "name": "@venkat.polisetti/crm-sfdx-plugin",
   "description": "Sfdx CLI plugin for automating mundane tasks such as setting FLS etc.,",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "author": "Venkat Polisetti",
   "bugs": "https://github.com/venkatpolisetti/crm-sfdx-plugin/issues",
   "dependencies": {
