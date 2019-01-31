@@ -1,9 +1,11 @@
-import { core, flags, SfdxCommand } from '@salesforce/command';
+import { core,  SfdxCommand } from '@salesforce/command';
+import { flags } from '@salesforce/command/node_modules/@oclif/command/node_modules/@oclif/parser/lib';
 import * as _ from 'lodash';
 import chalk from 'chalk';
 import { SaveResult } from 'jsforce';
 import * as interfaces from '../../../../shared/interfaces';
 import * as profileInfo from '../../../../shared/profile';
+import { ok } from 'assert';
 
 core.Messages.importMessagesDirectory(__dirname);
 const messages = core.Messages.loadMessages('@venkat.polisetti/crm-sfdx-plugin', 'fieldpermissions');
@@ -24,7 +26,7 @@ export default class set extends SfdxCommand {
 	protected static flagsConfig = {
 		profiles: flags.string({ char: 'p', required:true, description: messages.getMessage('profilesFlagDescription') }),
 		sobjects: flags.string({ char: 'o', required:true, description: messages.getMessage('objectsFlagDescription') }),
-		filter: flags.string({ char: 'f', required:true, description: messages.getMessage('filterFlagDescription') }),
+		filter: flags.string({ char: 'f', description: messages.getMessage('filterFlagDescription') }),
 		readaccess: flags.string({ char: 'r', description: messages.getMessage('readaccessFlagDescription') }),
 		editaccess: flags.string({ char: 'e', description: messages.getMessage('editaccessFlagDescription') }),
 		verbose: flags.boolean({ char: 'v', description: messages.getMessage('verboseFlagDescription') }),
@@ -54,35 +56,50 @@ export default class set extends SfdxCommand {
 			this.ux.startSpinner('Processing sobjects');
 			const customObjectMap = new Map();
 
+			const customObjectNamespaceStr = ("'" + this.flags.sobjects
+												.split(',')
+												.map(v => v.trim())
+												.filter(o => o.toLowerCase().endsWith('__c'))
+												.map(o => o.replace(/__c/i, ''))
+												.filter(o => o.includes('__'))
+												.map(o => o.substring(0, o.indexOf('__')))
+												.join("','") + "'");
+
 			const customObjectsStr = ("'" + this.flags.sobjects
 												.split(',')
 												.map(v => v.trim())
 												.filter(o => o.toLowerCase().endsWith('__c'))
-												.join("','") + "'")
-												.replace(/__c/gi, '');
+												.map(o => o.replace(/__c/i, ''))
+												.map(o => o.includes('__') ? o.substring(o.indexOf('__') + 2) : o)
+												.join("','") + "'");
 
 			const allObjectsStr = ("'" + this.flags.sobjects
 											.split(',')
-											.map(v => v.trim())
-											.join("','") + "'")
-											.replace(/__c/gi, '');
+											.map(v => v.trim().replace(/__c/i, ''))
+											.map(o => o.includes('__') ? o.substring(o.indexOf('__') + 2) : o)
+											.join("','") + "'");
 
-			const customObjects = await conn.tooling.query("SELECT Id, DeveloperName FROM CustomObject WHERE DeveloperName IN (" + customObjectsStr + ")");
+			const customObjects = await conn.tooling.query(
+				"SELECT Id, NamespacePrefix, DeveloperName " +
+				"FROM CustomObject " +
+				"WHERE DeveloperName IN (" + customObjectsStr + ") " +
+				"AND NamespacePrefix IN (" + customObjectNamespaceStr + ")"
+			);
 
 			customObjects.records
-				.map((c: { Id, DeveloperName }) => customObjectMap.set(c.Id, c.DeveloperName));
+				.map((c: { Id, NamespacePrefix, DeveloperName }) => customObjectMap.set(c.Id, (c.NamespacePrefix != null ? c.NamespacePrefix + '__' + c.DeveloperName : c.DeveloperName)));
 
 			const customObjIds = "'" + customObjects.records
-											.map((c: { Id, DeveloperName }) => c.Id)
+											.map((c: { Id, NamespacePrefix, DeveloperName }) => c.Id)
 											.join("','") + "'";
 
-			this.flags.filter = this.flags.filter.replace(/__c/gi, '');
+			//this.flags.filter = this.flags.filter.replace(/__c/gi, '');
 
 			const customFieldResult = await conn.tooling.query(
-				'SELECT DeveloperName, TableEnumOrId ' +
+				'SELECT NamespacePrefix, DeveloperName, TableEnumOrId ' +
 				'FROM CustomField ' +
 				'WHERE (TableEnumOrId IN (' + allObjectsStr + ') OR TableEnumOrId in (' + customObjIds + ')) ' +
-				'  AND ' + this.flags.filter
+				(this.flags.filter ? '  AND ' + this.flags.filter.replace(/__c/gi, '') : '')
 			);
 
 			let nonPermissionableFieldSet = await profileInfo.getNonPermissionableFields(conn, this.flags.sobjects);
@@ -90,13 +107,13 @@ export default class set extends SfdxCommand {
 			customFieldResult.records.map((r: { DeveloperName, TableEnumOrId }) => { customObjectMap.get(r.TableEnumOrId) || customObjectMap.set(r.TableEnumOrId, r.TableEnumOrId);});
 
 			const customFields = customFieldResult.records
-				.filter((r: { DeveloperName, TableEnumOrId }) => !nonPermissionableFieldSet.has(r.DeveloperName + '__c'))
-				.map((r: { DeveloperName, TableEnumOrId }) => {
+				.filter((r: { NamespacePrefix, DeveloperName, TableEnumOrId }) => !nonPermissionableFieldSet.has(r.NamespacePrefix != null ? r.NamespacePrefix + '__' + r.DeveloperName + '__c' : r.DeveloperName))
+				.map((r: { NamespacePrefix, DeveloperName, TableEnumOrId }) => {
 						const sobjectName = customObjectMap.get(r.TableEnumOrId);
 						if (sobjectName == r.TableEnumOrId) {  // standard object
 							return r.TableEnumOrId + '.' + r.DeveloperName + '__c';
 						} else { // custom object
-							return sobjectName + '__c' + '.' + r.DeveloperName + '__c';
+							return sobjectName + '__c' + '.' + (r.NamespacePrefix != null ? r.NamespacePrefix + '__' + r.DeveloperName + '__c' : r.DeveloperName + '__c');
 						}
 				});
 

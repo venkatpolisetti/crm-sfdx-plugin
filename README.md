@@ -79,7 +79,7 @@ OPTIONS
       edit permission, defaults to 'true'. Valid values are 'true' or 'false'.
 
   -f, --filter=filter
-      (required) Analogous to SOQL where clause to pull fields from SObjects. Allowed fields: CreatedDate, CreatedBy, 
+      Analogous to SOQL where clause to pull fields from SObjects. Allowed fields: CreatedDate, CreatedBy, 
       LastModifiedDate, LastModifiedBy and DeveloperName. DeveloperName here referes to the SObject custom field.
 
       Examples:

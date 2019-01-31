@@ -106,7 +106,7 @@ export async function getNonPermissionableFields(connection: core.Connection, so
 								.join("','") + "'";
 
 	const nonPermissionableResult = await connection.tooling.query(
-		'SELECT QualifiedApiName ' + 
+		'SELECT NamespacePrefix, QualifiedApiName ' + 
 		'FROM EntityParticle ' +
 		'WHERE isPermissionable = false ' + 
 		'AND EntityDefinition.QualifiedApiName IN (' + sobjectsList + ') ' +
@@ -117,7 +117,8 @@ export async function getNonPermissionableFields(connection: core.Connection, so
 					'\'LastReferencedDate\')' 
 	); 
 
-	nonPermissionableResult.records.map((r: { QualifiedApiName}) => nonPermissionableSet.add(r.QualifiedApiName));
+	nonPermissionableResult.records.map((r: { NamespacePrefix, QualifiedApiName}) =>
+		nonPermissionableSet.add(r.NamespacePrefix != undefined ? r.NamespacePrefix + '__' +  r.QualifiedApiName: r.QualifiedApiName));
 
 	return nonPermissionableSet;
 }

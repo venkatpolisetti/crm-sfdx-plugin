@@ -1,4 +1,5 @@
-import { core, flags, SfdxCommand } from '@salesforce/command';
+import { core, SfdxCommand } from '@salesforce/command';
+import { flags } from '@salesforce/command/node_modules/@oclif/command/node_modules/@oclif/parser/lib';
 import * as _ from 'lodash';
 import chalk from 'chalk';
 import { SaveResult } from 'jsforce';
